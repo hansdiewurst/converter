@@ -2,7 +2,7 @@
 const { Buffer } = require("buffer");
 const avsc = require("avsc");
 
-const schema = avsc.Type.forSchema({
+const schema0 = avsc.Type.forSchema({
     type: "record",
     name: "Schematic",
     fields: [
@@ -31,7 +31,7 @@ const schema = avsc.Type.forSchema({
         }
     ]
 });
-const blockdataSchema = avsc.Type.forSchema({
+const schema1 = avsc.Type.forSchema({
     type: "record",
     name: "Schematic",
     fields: [
@@ -75,14 +75,64 @@ const blockdataSchema = avsc.Type.forSchema({
 		}
     ]
 });
+const schema2 = avsc.Type.forSchema({
+    type: "record",
+    name: "Schematic",
+    fields: [
+        { name: 'headers', type: { type: 'fixed', size: 4 }, default: "\u{1}\u{0}\u{0}\u{0}" },
+        { name: "name", type: "string" },
+        { name: "x", type: "int" },
+        { name: "y", type: "int" },
+        { name: "z", type: "int" },
+        { name: "sizeX", type: "int" },
+        { name: "sizeY", type: "int" },
+        { name: "sizeZ", type: "int" },
+        {
+            name: "chunks",
+            type: {
+                type: "array",
+                items: {
+                    type: "record",
+                    fields: [
+                        { name: "x", type: "int" },
+                        { name: "y", type: "int" },
+                        { name: "z", type: "int" },
+                        { name: "blocks", type: "bytes" }
+                    ]
+                }
+            }
+        },
+		{
+			name: "blockdatas",
+			type: {
+                type: "array",
+                items: {
+                    type: "record",
+                    fields: [
+                        { name: "blockX", type: "int" },
+                        { name: "blockY", type: "int" },
+                        { name: "blockZ", type: "int" },
+						{ name: "blockdataStr", type: "string"}
+                    ]
+                }
+            }
+		},
+        { name: "globalX", type: "int" },
+        { name: "globalY", type: "int" },
+        { name: "globalZ", type: "int" }
+    ]
+});
 
 const parse = function(buffer) {
     let avroJson;
     try {
-        avroJson = blockdataSchema.fromBuffer(buffer);
+        avroJson = schema2.fromBuffer(buffer);
     } catch {
-        //schematics not storing blockdata (not that the blockdata is converted anyways)
-        avroJson = schema.fromBuffer(buffer);
+        try {
+            avroJson = schema1.fromBuffer(buffer);
+        } catch {
+            avroJson = schema0.fromBuffer(buffer);
+        }
     }
     const json = {
         name: avroJson.name,
@@ -190,7 +240,7 @@ const write = function(json) {
         avroJson.chunks.push(avroChunk);
     }
 
-    return schema.toBuffer(avroJson);
+    return schema0.toBuffer(avroJson);
 };
 
 module.exports = {

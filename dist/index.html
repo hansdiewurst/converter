@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Schematic Converter</title>
+        <meta name="description" content="Convert schematic files from minecraft to bloxd and vice versa">
+        <style>
+        * {
+            font-family: Arial, sans-serif;
+        }
+        a {
+            text-decoration: none;
+        }
+        /*input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+        }*/
+        </style>
+        <script src="./bundle.js" defer></script>
+    </head>
+    <body>
+        <div class="text-cont">
+            <h2>Convert schematic files from minecraft to bloxd and vice versa</h1>
+            <div>
+                <strong>Credit:</strong>
+                Significant parts of block-jsons.js are taken from
+                <a href="https://bloxd.io/">bloxd</a>. View the unbundled code, including block-jsons.js,
+                <a href="https://github.com/hansdiewurst/converter">here</a>.
+            </div>
+            <div>
+                <strong>Supported types:</strong>
+                .bloxdschem, .schematic, .schem, .litematic
+            </div>
+            <div>
+                It is recommended to use 
+                <a href="https://beta.cubical.xyz">beta cubical</a>
+                to convert .schematic files to .schem (File -> Export File -> Sponge Schematic) for more accurate conversion.
+            </div>
+            <div>Blocks with no equivalent are being replaced with dirt.</div>
+            <!--<br>
+            <strong>Drag and drop a file into this window or click anywhere on screen to convert</strong>-->
+        </div>
+    </body>
+</html>
