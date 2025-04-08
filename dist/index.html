@@ -10,14 +10,6 @@
         a {
             text-decoration: none;
         }
-        /*input {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            opacity: 0;
-        }*/
         </style>
         <script src="./bundle.js" defer></script>
     </head>
@@ -40,8 +32,12 @@
                 to convert .schematic files to .schem (File -> Export File -> Sponge Schematic) for more accurate conversion.
             </div>
             <div>Blocks with no equivalent are being replaced with dirt.</div>
-            <!--<br>
-            <strong>Drag and drop a file into this window or click anywhere on screen to convert</strong>-->
+
+            <strong>Splitting Info:</strong>
+            <div>Minecraft Schematics that exceed bloxd's maximum chunk size get split into multiple files.</div>
+            <div>The X-Coordinate specified at the end each file name represents the amount of blocks the build has to be moved on the X-Axis, compared to the position of the first schematic.</div>
+            <div>The Y- and Z-Coordinates stay the same.</div>
+            </div>
         </div>
     </body>
 </html>

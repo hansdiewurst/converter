@@ -175,6 +175,35 @@ const parse = function(buffer) {
     return json;
 }
 
+const splitBloxdschem = function(json) {
+    const schems = [];
+    const zySize = Math.ceil(json.sizeY / 32) * Math.ceil(json.sizeZ / 32);
+    const sliceSize = Math.floor(200 / zySize);
+    let currOffset = 0;
+    while(true) {
+        const chunksSlice = json.chunks.splice(0, zySize * sliceSize);
+        if(!chunksSlice.length) break;
+
+        chunksSlice.map(chunk => chunk.x -= currOffset);
+
+        schems.push({
+            name: json.name,
+            x: 0,
+            y: 0,
+            z: 0,
+            //maybe shorter for final?
+            sizeX: Math.min(json.sizeX, sliceSize * 32),
+            sizeY: json.sizeY,
+            sizeZ: json.sizeZ,
+            chunks: chunksSlice
+        })
+        currOffset += sliceSize;
+    }
+    return {
+        schems: schems,
+        sliceSize: sliceSize
+    };
+}
 const write = function(json) {
     const avroJson = {
         name: json.name,
@@ -240,7 +269,18 @@ const write = function(json) {
         avroJson.chunks.push(avroChunk);
     }
 
-    return schema0.toBuffer(avroJson);
+    const {
+        schems: splitJsons,
+        sliceSize
+    } = splitBloxdschem(avroJson);
+    const bins = [];
+    for(const json of splitJsons) {
+        bins.push(schema0.toBuffer(json));
+    }
+    return {
+        schems: bins,
+        sliceSize: sliceSize * 32
+    };
 };
 
 module.exports = {

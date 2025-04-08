@@ -17,18 +17,10 @@ const downloadBin = function (data, name) {
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
-const error = function (text) {
-    const err = new Error(text);
-    const elem = document.createElement("div");
-    elem.innerHTML = err;
-    elem.style.color = "#f00";
-    document.body.appendChild(elem);
-    setTimeout(() => elem.remove(), 5000);
-    throw err;
-};
 
 const input = document.createElement("input");
 input.type = "file";
+input.accept = ".bloxdschem,.schematic,.schem,.litematic";
 input.addEventListener("input", () => {
     const file = input.files[0];
     const split = file.name.split(".");
@@ -48,8 +40,6 @@ input.addEventListener("input", () => {
         ].some(mcType => type === mcType)
     ) {
         handler = mcToBloxd;
-    } else {
-        error("File type not recognized. Only valid are .schem and .bloxdschem");
     }
 
     fileReader.readAsArrayBuffer(file);
@@ -81,8 +71,15 @@ const mcToBloxd = async function (buffer, name, type) {
 
     const parsed = await mcParsers[type](buffer);
     const bloxdJson = mcJSONToBloxd(parsed, name);
-    const bloxdSchem = writeBloxdschem(bloxdJson);
+    const {
+        schems: bloxdSchems,
+        sliceSize
+    } = writeBloxdschem(bloxdJson);
     console.log(`Conversion time: ${Date.now() - startTime}`);
 
-    downloadBin(bloxdSchem, `${name}.bloxdschem`);
+    for(let i = 0; i < bloxdSchems.length; i++) {
+        const bloxdSchem = bloxdSchems[i];
+        const nameSuffix = bloxdSchems.length > 1 ? `-x${i * sliceSize}` : "";
+        downloadBin(bloxdSchem, `${name + nameSuffix}.bloxdschem`);
+    }
 };
