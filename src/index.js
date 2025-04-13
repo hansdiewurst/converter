@@ -1,9 +1,10 @@
 const { Buffer } = require("buffer");
+const JSZip = require("jszip");
 const { parseBloxdschem, writeBloxdschem } = require("./bloxd.js");
 const { parseSchem, parseLitematic, parseSchematic, writeMinecraft } = require("./minecraft.js");
 const { mcJSONToBloxd, bloxdJSONtoMc } = require("./json.js");
 
-const downloadBin = function (data, name) {
+const downloadBin = function(data, name) {
     const blob = new Blob([data], {
         type: "application/octet-stream"
     });
@@ -11,12 +12,18 @@ const downloadBin = function (data, name) {
     const a = document.createElement("a");
     a.href = url;
     a.download = name;
-    a.style.display = "none";
-    document.body.appendChild(a);
     a.click();
-    a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
+const downloadZip = async function(zip, name) {
+    const content = await zip.generateAsync({ type: "blob" });
+    const url = URL.createObjectURL(content);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 const input = document.createElement("input");
 input.type = "file";
@@ -29,18 +36,7 @@ input.addEventListener("input", () => {
 
     const fileReader = new FileReader();
 
-    let handler;
-    if(type === "bloxdschem") {
-        handler = bloxdToMinecraft;
-    } else if(
-        [
-            "schem",
-            "litematic",
-            "schematic"
-        ].some(mcType => type === mcType)
-    ) {
-        handler = mcToBloxd;
-    }
+    let handler = type === "bloxdschem" ? bloxdToMc : mcToBloxd;
 
     fileReader.readAsArrayBuffer(file);
     fileReader.addEventListener("load", event => {
@@ -50,7 +46,7 @@ input.addEventListener("input", () => {
 });
 document.body.appendChild(input);
 
-const bloxdToMinecraft = function (buffer, name) {
+const bloxdToMc = function (buffer, name) {
     const startTime = Date.now();
 
     const parsed = parseBloxdschem(buffer);
@@ -61,15 +57,21 @@ const bloxdToMinecraft = function (buffer, name) {
     downloadBin(mcSchem, `${name}.schem`);
 };
 
+const parseMc = async function(buffer) {
+    try {
+        return await parseSchem(buffer);
+    } catch {}
+    try {
+        return await parseLitematic(buffer);
+    } catch {}
+    try {
+        return await parseSchematic(buffer);
+    } catch {}
+};
 const mcToBloxd = async function (buffer, name, type) {
     const startTime = Date.now();
-    const mcParsers = {
-        schem: parseSchem,
-        litematic: parseLitematic,
-        schematic: parseSchematic
-    };
 
-    const parsed = await mcParsers[type](buffer);
+    const parsed = await parseMc(buffer);
     const bloxdJson = mcJSONToBloxd(parsed, name);
     const {
         schems: bloxdSchems,
@@ -77,9 +79,14 @@ const mcToBloxd = async function (buffer, name, type) {
     } = writeBloxdschem(bloxdJson);
     console.log(`Conversion time: ${Date.now() - startTime}`);
 
-    for(let i = 0; i < bloxdSchems.length; i++) {
-        const bloxdSchem = bloxdSchems[i];
-        const nameSuffix = bloxdSchems.length > 1 ? `-x${i * sliceSize}` : "";
-        downloadBin(bloxdSchem, `${name + nameSuffix}.bloxdschem`);
+    if(bloxdSchems.length > 1) {
+        const zip = new JSZip();
+        for(let i = 0; i < bloxdSchems.length; i++) {
+            const bloxdSchem = bloxdSchems[i];
+            zip.file(`${name}-x${i * sliceSize}.bloxdschem`, bloxdSchem, { binary: true });
+        }
+        await downloadZip(zip, `${name}.zip`);
+    } else {
+        downloadBin(bloxdSchems[0], `${name}.bloxdschem`);
     }
 };
