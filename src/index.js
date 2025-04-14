@@ -23,7 +23,16 @@ const downloadZip = async function(zip, name) {
     a.download = name;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
+};
+const error = function (text) {
+    const err = new Error(text);
+    const elem = document.createElement("div");
+    elem.innerHTML = err;
+    elem.style.color = "#f00";
+    document.body.appendChild(elem);
+    setTimeout(() => elem.remove(), 5000);
+    throw err;
+};
 
 const input = document.createElement("input");
 input.type = "file";
@@ -36,7 +45,14 @@ input.addEventListener("input", () => {
 
     const fileReader = new FileReader();
 
-    let handler = type === "bloxdschem" ? bloxdToMc : mcToBloxd;
+    let handler;
+    if(type === "bloxdschem") {
+        handler = bloxdToMc;
+     } else if(["schematic", "schem", "litematic"].includes(type)) {
+        handler = mcToBloxd;
+     } else {
+        error("File type not recognized. Only valid are .bloxdschem, .schematic, .schem and .litematic");
+     }
 
     fileReader.readAsArrayBuffer(file);
     fileReader.addEventListener("load", event => {
