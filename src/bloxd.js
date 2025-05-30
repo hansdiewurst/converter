@@ -79,7 +79,7 @@ const schema2 = avsc.Type.forSchema({
     type: "record",
     name: "Schematic",
     fields: [
-        { name: 'headers', type: { type: 'fixed', size: 4 }, default: "\u{1}\u{0}\u{0}\u{0}" },
+        { name: 'headers', type: { type: 'fixed', size: 4 }, default: "\u{2}\u{0}\u{0}\u{0}" },
         { name: "name", type: "string" },
         { name: "x", type: "int" },
         { name: "y", type: "int" },
@@ -122,16 +122,69 @@ const schema2 = avsc.Type.forSchema({
         { name: "globalZ", type: "int" }
     ]
 });
+const schema3 = avsc.Type.forSchema({
+    type: "record",
+    name: "Schematic",
+    fields: [
+        { name: 'headers', type: { type: 'fixed', size: 4 }, default: "\u{3}\u{0}\u{0}\u{0}" },
+        { name: "name", type: "string" },
+        { name: "x", type: "int" },
+        { name: "y", type: "int" },
+        { name: "z", type: "int" },
+        { name: "sizeX", type: "int" },
+        { name: "sizeY", type: "int" },
+        { name: "sizeZ", type: "int" },
+        {
+            name: "chunks",
+            type: {
+                type: "array",
+                items: {
+                    type: "record",
+                    fields: [
+                        { name: "x", type: "int" },
+                        { name: "y", type: "int" },
+                        { name: "z", type: "int" },
+                        { name: "blocks", type: "bytes" }
+                    ]
+                }
+            }
+        },
+		{
+			name: "blockdatas",
+			type: {
+                type: "array",
+                items: {
+                    type: "record",
+                    fields: [
+                        { name: "blockX", type: "int" },
+                        { name: "blockY", type: "int" },
+                        { name: "blockZ", type: "int" },
+						{ name: "blockdataStr", type: "string"}
+                    ]
+                }
+            }
+		},
+        { name: "globalX", type: "int" },
+        { name: "globalY", type: "int" },
+        { name: "globalZ", type: "int" },
+        { name: 'wtvthisis', type: { type: 'fixed', size: 1 }, default: "\u{0}" },
+    ]
+});
 
 const parse = function(buffer) {
     let avroJson;
+    //wtf is this turning into
     try {
-        avroJson = schema2.fromBuffer(buffer);
+        avroJson = schema3.fromBuffer(buffer);
     } catch {
         try {
-            avroJson = schema1.fromBuffer(buffer);
+            avroJson = schema2.fromBuffer(buffer);
         } catch {
-            avroJson = schema0.fromBuffer(buffer);
+            try {
+                avroJson = schema1.fromBuffer(buffer);
+            } catch {
+                avroJson = schema0.fromBuffer(buffer);
+            }
         }
     }
     const json = {
