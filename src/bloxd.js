@@ -2,11 +2,10 @@
 const { Buffer } = require("buffer");
 const avsc = require("avsc");
 
-const schema0 = avsc.Type.forSchema({
+const lightSchema = avsc.Type.forSchema({
     type: "record",
     name: "Schematic",
     fields: [
-        { name: 'headers', type: { type: 'fixed', size: 4 }, default: "\u{0}\u{0}\u{0}\u{0}" },
         { name: "name", type: "string" },
         { name: "x", type: "int" },
         { name: "y", type: "int" },
@@ -31,11 +30,11 @@ const schema0 = avsc.Type.forSchema({
         }
     ]
 });
-const schema1 = avsc.Type.forSchema({
+const fullSchema = avsc.Type.forSchema({
     type: "record",
     name: "Schematic",
     fields: [
-        { name: 'headers', type: { type: 'fixed', size: 4 }, default: "\u{1}\u{0}\u{0}\u{0}" },
+        { name: 'headers', type: { type: 'fixed', size: 4 }, default: "\u{4}\u{0}\u{0}\u{0}" },
         { name: "name", type: "string" },
         { name: "x", type: "int" },
         { name: "y", type: "int" },
@@ -71,122 +70,19 @@ const schema1 = avsc.Type.forSchema({
 						{ name: "blockdataStr", type: "string"}
                     ]
                 }
-            }
-		}
-    ]
-});
-const schema2 = avsc.Type.forSchema({
-    type: "record",
-    name: "Schematic",
-    fields: [
-        { name: 'headers', type: { type: 'fixed', size: 4 }, default: "\u{2}\u{0}\u{0}\u{0}" },
-        { name: "name", type: "string" },
-        { name: "x", type: "int" },
-        { name: "y", type: "int" },
-        { name: "z", type: "int" },
-        { name: "sizeX", type: "int" },
-        { name: "sizeY", type: "int" },
-        { name: "sizeZ", type: "int" },
-        {
-            name: "chunks",
-            type: {
-                type: "array",
-                items: {
-                    type: "record",
-                    fields: [
-                        { name: "x", type: "int" },
-                        { name: "y", type: "int" },
-                        { name: "z", type: "int" },
-                        { name: "blocks", type: "bytes" }
-                    ]
-                }
-            }
-        },
-		{
-			name: "blockdatas",
-			type: {
-                type: "array",
-                items: {
-                    type: "record",
-                    fields: [
-                        { name: "blockX", type: "int" },
-                        { name: "blockY", type: "int" },
-                        { name: "blockZ", type: "int" },
-						{ name: "blockdataStr", type: "string"}
-                    ]
-                }
-            }
+            },
+            default: []
 		},
-        { name: "globalX", type: "int" },
-        { name: "globalY", type: "int" },
-        { name: "globalZ", type: "int" }
+        { name: "globalX", type: "int", default: 0 },
+        { name: "globalY", type: "int", default: 0 },
+        { name: "globalZ", type: "int", default: 0 },
+        { name: 'wtvthisis', type: { type: 'fixed', size: 2 }, default: "\u{0}\u{0}" },
     ]
 });
-const schema3 = avsc.Type.forSchema({
-    type: "record",
-    name: "Schematic",
-    fields: [
-        { name: 'headers', type: { type: 'fixed', size: 4 }, default: "\u{3}\u{0}\u{0}\u{0}" },
-        { name: "name", type: "string" },
-        { name: "x", type: "int" },
-        { name: "y", type: "int" },
-        { name: "z", type: "int" },
-        { name: "sizeX", type: "int" },
-        { name: "sizeY", type: "int" },
-        { name: "sizeZ", type: "int" },
-        {
-            name: "chunks",
-            type: {
-                type: "array",
-                items: {
-                    type: "record",
-                    fields: [
-                        { name: "x", type: "int" },
-                        { name: "y", type: "int" },
-                        { name: "z", type: "int" },
-                        { name: "blocks", type: "bytes" }
-                    ]
-                }
-            }
-        },
-		{
-			name: "blockdatas",
-			type: {
-                type: "array",
-                items: {
-                    type: "record",
-                    fields: [
-                        { name: "blockX", type: "int" },
-                        { name: "blockY", type: "int" },
-                        { name: "blockZ", type: "int" },
-						{ name: "blockdataStr", type: "string"}
-                    ]
-                }
-            }
-		},
-        { name: "globalX", type: "int" },
-        { name: "globalY", type: "int" },
-        { name: "globalZ", type: "int" },
-        { name: 'wtvthisis', type: { type: 'fixed', size: 1 }, default: "\u{0}" },
-    ]
-});
+const resolver = lightSchema.createResolver(fullSchema);
 
 const parse = function(buffer) {
-    let avroJson;
-    //wtf is this turning into
-    try {
-        avroJson = schema3.fromBuffer(buffer);
-    } catch {
-        try {
-            avroJson = schema2.fromBuffer(buffer);
-        } catch {
-            try {
-                avroJson = schema1.fromBuffer(buffer);
-            } catch {
-                avroJson = schema0.fromBuffer(buffer);
-            }
-        }
-    }
+    const avroJson = lightSchema.fromBuffer(buffer, resolver, true);
     const json = {
         name: avroJson.name,
         pos: [ avroJson.x, avroJson.y, avroJson.z ],
@@ -328,7 +224,7 @@ const write = function(json) {
     } = splitBloxdschem(avroJson);
     const bins = [];
     for(const json of splitJsons) {
-        bins.push(schema0.toBuffer(json));
+        bins.push(fullSchema.toBuffer(json));
     }
     return {
         schems: bins,
