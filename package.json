@@ -1,26 +1,25 @@
 {
-  "name": "converter-gh",
-  "version": "1.0.0",
+  "name": "bloxd-converter",
+  "version": "2.0.0",
   "description": "Convert schematic files from bloxd to minecraft and vice versa.",
   "main": "src/index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -noEmit && node esbuild.config.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "webpack-cli": "^6.0.1"
+    "@types/ndarray": "^1.0.14",
+    "@types/node": "^26.0.1",
+    "esbuild": "^0.27.7",
+    "esbuild-plugins-node-modules-polyfill": "^1.8.1",
+    "typescript": "^6.0.3"
   },
+  "type": "module",
   "dependencies": {
-    "assert": "^2.1.0",
-    "browserify-zlib": "^0.2.0",
-    "buffer": "^6.0.3",
+    "avsc": "^5.7.9",
     "jszip": "^3.10.1",
-    "path-browserify": "^1.0.1",
-    "process": "^0.11.10",
-    "stream-browserify": "^3.0.0",
-    "util": "^0.12.5",
-    "webpack": "^5.99.0"
+    "ndarray": "^1.0.19",
+    "prismarine-nbt": "^2.8.0"
   }
 }

@@ -1,50 +1,15 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Schematic Converter</title>
-        <meta name="description" content="Convert schematic files from minecraft to bloxd and vice versa">
-        <style>
-        * {
-            font-family: Arial, sans-serif;
-        }
-        a {
-            text-decoration: none;
-        }
-        </style>
+        <title>Bloxd.io Schematic Converter</title>
+        <meta name="description" content="Convert schematic files from minecraft to bloxd.io and vice versa">
+        <link rel="stylesheet" href="index.css">
         <script src="./bundle.js" defer></script>
+        <script> document.oncontextmenu = evt => { evt.preventDefault(); return false; }; </script>
     </head>
     <body>
-        <div class="text-cont">
-            <h2>Convert schematic files from minecraft to bloxd and vice versa</h1>
-            <div>
-                <strong>Credit:</strong>
-                Significant parts of block-jsons.js are taken from
-                <a href="https://bloxd.io/">bloxd</a>. View the unbundled code, including block-jsons.js,
-                <a href="https://github.com/hansdiewurst/converter">here</a>.
-            </div>
-            <div>
-                <strong>Supported types:</strong>
-                .bloxdschem, .schematic, .schem, .litematic
-            </div>
-            <div>
-                It is recommended to use 
-                <a href="https://beta.cubical.xyz">beta cubical</a>
-                to convert .schematic files to .schem (File -> Export File -> Sponge Schematic) for more accurate conversion.
-            </div>
-            <div>Blocks with no equivalent are being replaced with dirt.</div>
-
-            <strong>Splitting Info:</strong>
-            <div>Minecraft Schematics that exceed bloxd's maximum chunk size get split into multiple files, compressed into a single .zip file.</div>
-            <div>The X-Coordinate specified at the end each file name represents the amount of blocks the build has to be moved on the X-Axis, compared to the position of the first schematic.</div>
-            <div>The Y- and Z-Coordinates stay the same.</div>
-
-            <div>
-                <strong>Note:</strong>
-                I've realised that .bloxdschem to .schem is quite buggy, but I cba to fix it, as I don't want to keep working on this project. Feel free to make your own fixed version of this, just credit me if you do.
-            </div>
-            <br>
-
-            </div>
+        <div class="container">
+            <div class="title">Bloxd Schematic Converter</div>
         </div>
     </body>
 </html>
