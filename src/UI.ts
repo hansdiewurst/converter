@@ -66,7 +66,7 @@ export class UIHandler {
     init() {
         const description = <HTMLDivElement>this.create("div", {
             className: "description",
-            text: "Convert schematic files from minecraft to bloxd or the other way iadhas.<br>Upload and a schematic to get started:"
+            text: "Convert schematic files from minecraft to bloxd.io or the other way around.<br>Upload and a schematic to get started:"
         });
         const fileInput = <HTMLInputElement>this.create("input", {
             className: "file-input",
