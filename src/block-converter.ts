@@ -88,7 +88,7 @@ export default class BlockConverter {
     private blockIdLists = {
         //m2bJSON isnt an exhaustive list, so maybe have a seperate array of all ids?
         minecraft: new Set(Object.keys(m2bJSON)),
-        bloxd: new Set(Object.keys(nameToIdJSON).concat("Air"))
+        bloxd: new Set(Object.keys(nameToIdJSON))
     };
     async getUserBlock(fromBlock: string, toType: "minecraft" | "bloxd") {
         if(this.manualCache.has(fromBlock)) return this.manualCache.get(fromBlock)!;
