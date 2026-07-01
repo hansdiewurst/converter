@@ -74,40 +74,81 @@ enum FacingRotationInv {
     east
 }
 
-export default class BlockConverter {
-    private b2mCache = new Map<BloxdBlockId, MinecraftBlockId>;
-    private m2bCache = new Map<MinecraftBlockId, BloxdBlockId>;
-    /** Manual conversions are of cleaned up blocks, meaning getUserBlock could get called multiple times for the same block because of different blockstates/meta */
-    private manualCache = new Map<BloxdBlockName | MinecraftBlockId, BloxdBlockName | MinecraftBlockId>
-    private UI: UIHandler;
-
+class Prompter {
+    private storageKeys = {
+        minecraft: "stored-mc",
+        bloxd: "stored-bloxd"
+    };
+    UI: UIHandler;
     constructor(UI: UIHandler) {
         this.UI = UI;
+        for(const type in this.storageKeys) {
+            const key = this.storageKeys[type];
+            let item = localStorage.getItem(key);
+            let parsed: Object | null = null;
+            try { parsed = JSON.parse(item ?? "") } catch {}
+            if(!parsed) {
+                parsed = {};
+                localStorage.setItem(key, "{}");
+            }
+
+            this.storedBlocks[type] = parsed;
+        }
     }
 
+    private store(type: "minecraft" | "bloxd", from: string, to: string) {
+        this.storedBlocks[type][from] = to;
+        localStorage.setItem(this.storageKeys[type], JSON.stringify(this.storedBlocks[type]));
+    }
+
+    /** Manual conversions are of cleaned up blocks, meaning getUserBlock could get called multiple times for the same block because of different blockstates/meta */
+    private cache = new Map<BloxdBlockName | MinecraftBlockId, BloxdBlockName | MinecraftBlockId>;
     private blockIdLists = {
         //m2bJSON isnt an exhaustive list, so maybe have a seperate array of all ids?
         minecraft: new Set(Object.keys(m2bJSON)),
         bloxd: new Set(Object.keys(nameToIdJSON))
     };
+    private repeatBlocks: Record<string, BloxdBlockName | null> = {
+        minecraft: null,
+        bloxd: null
+    };
+    private storedBlocks: Record<string, Object> = {};
+
     async getUserBlock(fromBlock: string, toType: "minecraft" | "bloxd") {
-        if(this.manualCache.has(fromBlock)) return this.manualCache.get(fromBlock)!;
+        if(this.repeatBlocks[toType]) return this.repeatBlocks[toType];
+        if(fromBlock in this.storedBlocks[toType]) return this.storedBlocks[toType][fromBlock];
+        if(this.cache.has(fromBlock)) return this.cache.get(fromBlock)!;
 
         const fromType = toType === "minecraft" ? "bloxd" : "minecraft";
         return new Promise<string>((resolve) => {
             this.UI.prompt(
                 "Block Conversion",
                 `Choose conversion from ${fromType}-id '${fromBlock}' to ${toType}:`,
-                value => {
+                (value, repeat, save) => {
                     if(!this.blockIdLists[toType].has(value)) return false;
+                    if(repeat) this.repeatBlocks[toType] = value;
+                    else if(save) this.store(toType, fromBlock, value);
 
-                    this.manualCache.set(fromBlock, value);
+                    this.cache.set(fromBlock, value);
                     //delay in order for ui to be removed before further processing
                     setTimeout(() => resolve(value), 1);
                     return true;
                 }
             );
         });
+    }
+}
+
+export default class BlockConverter {
+    private b2mCache = new Map<BloxdBlockId, MinecraftBlockId>;
+    private m2bCache = new Map<MinecraftBlockId, BloxdBlockId>;
+
+    constructor(UI: UIHandler) {
+        this.prompter = new Prompter(UI);
+    }
+    private prompter: Prompter;
+    async getUserBlock(fromBlock: string, toType: "minecraft" | "bloxd") {
+        return this.prompter.getUserBlock(fromBlock, toType);
     }
 
     //Minecraft helpers

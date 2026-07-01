@@ -228,7 +228,27 @@ export class UIHandler {
         return popup;
     }
 
-    prompt(title: string, message: string, onSubmit: (value: string) => boolean) {
+    prompt(title: string, message: string, onSubmit: (value: string, repeat: boolean, save: boolean) => boolean) {
+        const makeCheckbox = (id: string, text: string) => {
+            return {
+                opts: {
+                    className: "checkbox-container",
+                    id: id,
+                    children: [
+                        {
+                            type: "input",
+                            opts: {
+                                attributes: {
+                                    type: "checkbox"
+                                }
+                            }
+                        },
+                        { opts: { text } }
+                    ]
+                }
+            };
+        };
+
         const inner = this.create("div", {
             className: "popup-message-inner",
             children: [
@@ -252,6 +272,15 @@ export class UIHandler {
                 },
                 {
                     opts: {
+                        className: "checkboxes-cont",
+                        children: [
+                            makeCheckbox("all-blocks", "Use this for all blocks"),
+                            makeCheckbox("save", "Store this conversion")
+                        ]
+                    }
+                },
+                {
+                    opts: {
                         className: "error-message"
                     }
                 },
@@ -263,7 +292,11 @@ export class UIHandler {
                         events: [{
                             type: "click",
                             listener: () => {
-                                const success = onSubmit(inner.querySelector("input")?.value ?? "");
+                                // @ts-ignore
+                                const repeat = inner.querySelector("#all-blocks>input")?.checked;
+                                // @ts-ignore
+                                const save = inner.querySelector("#save>input")?.checked;
+                                const success = onSubmit(inner.querySelector("input")?.value ?? "", repeat, save);
                                 if(success) popup.remove();
                                 else {
                                     const elem = inner.querySelector(".error-message")!;

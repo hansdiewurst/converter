@@ -256,3 +256,11 @@ body {
     gap: 1.5rem;
     --falloff: .1;
 }
+
+.checkbox-container {
+    display: flex;
+}
+.checkboxes-cont {
+    display: flex;
+    gap: 1rem;
+}
