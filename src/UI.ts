@@ -52,6 +52,8 @@ export class UIHandler {
     }
     private container: Element;
     private converter: Converter;
+    private canvasCont: Element;
+    canvas: HTMLCanvasElement;
 
     constructor(converter: Converter) {
         this.converter = converter;
@@ -64,6 +66,7 @@ export class UIHandler {
     }
 
     init() {
+        this.addGithubIcon();
         const description = <HTMLDivElement>this.create("div", {
             className: "description",
             text: "Convert schematic files from minecraft to bloxd.io or the other way around.<br>Upload and a schematic to get started:"
@@ -83,6 +86,7 @@ export class UIHandler {
                     await this.converter.handleFile(file).catch(e => { this.error(e.message); throw ""; });
 
                     this.addExportUI();
+                    this.addPreviewButton();
                 }
             }]
         });
@@ -99,9 +103,68 @@ export class UIHandler {
         const info = this.create("div", {
             className: "upload-info",
             text: `Accepted files: ${this.converter.legalFileTypes.map(t => `.${t}`).join(", ")}<br>All files are processed locally.`
-        })
+        });
+        this.addCanvasUI();
 
         this.container.append(description, fileInput, uploadButton, info);
+    }
+
+    addGithubIcon() {
+        const container = this.create("div", {
+            className: "github-cont",
+            children: [{
+                opts: {
+                    className: "github-text",
+                    text: "Star on GitHub!!"
+                }
+            }, {
+                type: "img",
+                opts: {
+                    attributes: { src: "./assets/arrow.svg" },
+                    className: "github-arrow"
+                }
+            }, {
+                opts: {
+                    className: "github-icon-cont",
+                    children: [{ opts: {
+                        className: "github-icon",
+                        events: [{ type: "click", listener: () => window.open("https://github.com/hansdiewurst/converter") }]
+                    } }]
+                }
+            }]
+        });
+
+        this.container.querySelector(".header")?.appendChild(container);
+    }
+
+    addCanvasUI() {
+        const container = this.create("div", {
+            className: "preview-container",
+            children: [
+                {
+                    opts: {
+                        className: "preview-content",
+                        children: [{
+                            type: "canvas", opts: { id: "preview-canvas" }
+                        }, { type: "button", opts: {
+                            className: "preview-close-btn",
+                            text: "X",
+                            events: [{ type: "click", listener: ev => { this.converter.removeSchematicPreview() } }]
+                        }}]
+                    }
+                }
+            ]
+        });
+
+        this.canvas = container.querySelector("#preview-canvas")!;
+        this.canvasCont = container;
+        this.container.appendChild(container);
+    }
+    showCanvas() {
+        this.canvasCont.classList.add("active");
+    }
+    hideCanvas() {
+        this.canvasCont.classList.remove("active");
     }
 
     addExportUI() {
@@ -133,6 +196,28 @@ export class UIHandler {
         });
 
         this.container.appendChild(exportOpts);
+    }
+    addPreviewButton() {
+        document.querySelector(".preview-button-cont")?.remove();
+
+        const container = this.create("div", {
+            className: "preview-button-cont",
+            children: [{
+                type: "button",
+                opts: {
+                    className: "preview-button fancy-button shine-button cool-badge",
+                    text: "Preview Schematic",
+                    events: [{
+                        type: "click",
+                        listener: () => {
+                            this.converter.previewSchematic();
+                        }
+                    }]
+                }
+            }]
+        });
+
+        this.container.appendChild(container);
     }
 
     private getPopupElement(inner: Element, addToDOM = true) {

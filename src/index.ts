@@ -8,6 +8,8 @@ import { ProgressBarManager } from "./ProgressBar";
 import BlockConverter from "./block-converter";
 import ndarray from "ndarray";
 import JSZip from "jszip";
+import { Renderer } from "./renderer";
+
 
 const legalFileTypes = [ "bloxdschem", "schem", "schematic", "litematic" ] as const;
 const exportFileTypes = [ "bloxdschem", "schem" ] as const;
@@ -67,6 +69,7 @@ export class Converter {
 
     private reader: Reader;
     private UI: UIHandler;
+    private renderer: Renderer;
     progressBar: ProgressBarManager;
 
     legalFileTypes = legalFileTypes;
@@ -76,6 +79,7 @@ export class Converter {
         this.reader = new Reader();
         this.UI = new UIHandler(this);
         this.progressBar = new ProgressBarManager(this.UI);
+        this.renderer = new Renderer(this.UI.canvas);
         this.progressBar.registerTask({
             name: "load_schematic",
             text: "Loading Schematic",
@@ -124,6 +128,23 @@ export class Converter {
         //Not the nicest solution, only works for treating Converter as singleton
         Schematic.blockConverter = new BlockConverter(this.UI);
     }
+
+    previewSchematic() {
+        if(!this.currSchematic) {
+            this.UI.error("No schematic to render");
+            return;
+        }
+
+        //render mesh to canvas
+        this.renderer.renderSchematic(this.currSchematic);
+        //show canvas ui
+        this.UI.showCanvas();
+    }
+    removeSchematicPreview() {
+        this.renderer.unrenderSchematic();
+        this.UI.hideCanvas();
+    }
+
 
     async handleFile(file: File) {
         this.progressBar.startTask("load_schematic");

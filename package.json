@@ -11,15 +11,17 @@
   "devDependencies": {
     "@types/ndarray": "^1.0.14",
     "@types/node": "^26.0.1",
+    "@types/three": "^0.185.0",
     "esbuild": "^0.27.7",
     "esbuild-plugins-node-modules-polyfill": "^1.8.1",
     "typescript": "^6.0.3"
   },
-  "type": "module",
   "dependencies": {
     "avsc": "^5.7.9",
     "jszip": "^3.10.1",
     "ndarray": "^1.0.19",
-    "prismarine-nbt": "^2.8.0"
-  }
+    "prismarine-nbt": "^2.8.0",
+    "three": "^0.185.1"
+  },
+  "type": "module"
 }
